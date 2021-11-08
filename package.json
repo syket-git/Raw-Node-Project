@@ -1,0 +1,12 @@
+{
+  "name": "rawnodeapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "set NODE_ENV=staging & nodemon index.js",
+    "production": "set NODE_ENV=production & nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
