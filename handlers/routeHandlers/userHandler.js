@@ -196,6 +196,38 @@ handler._users.put = (requestProperties, callback) => {
 };
 
 // User delete handler
-handler._users.delete = (requestProperties, callback) => {};
+handler._users.delete = (requestProperties, callback) => {
+  const phone =
+    typeof requestProperties.body.phone === 'string' &&
+    requestProperties.body.phone.trim()?.length === 11
+      ? requestProperties.body.phone
+      : false;
+
+  if (phone) {
+    data.read('users', phone, (err2, user) => {
+      if (err2) {
+        callback(404, {
+          message: 'File was not found',
+        });
+      } else {
+        data.delete('users', phone, (err) => {
+          if (err) {
+            callback(500, {
+              message: 'Internal server error',
+            });
+          } else {
+            callback(200, {
+              message: 'File was deleted successfully',
+            });
+          }
+        });
+      }
+    });
+  } else {
+    callback(400, {
+      message: 'Bad request',
+    });
+  }
+};
 
 module.exports = handler;
