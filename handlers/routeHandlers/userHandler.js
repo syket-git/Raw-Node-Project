@@ -6,7 +6,7 @@
  */
 
 //Dependencies
-const { hash } = require('../../helpers/utilities');
+const { hash, parseJson } = require('../../helpers/utilities');
 const data = require('../../lib/data');
 
 // module scaffolding
@@ -23,6 +23,8 @@ handler.userHandler = (requestProperties, callback) => {
 };
 
 handler._users = {};
+
+// User post handler
 
 handler._users.post = (requestProperties, callback) => {
   // Sanitizing the user requested data
@@ -91,12 +93,40 @@ handler._users.post = (requestProperties, callback) => {
     });
   }
 };
+
+// User get Handler
+
 handler._users.get = (requestProperties, callback) => {
-  callback(200, {
-    message: 'Yes its user get method',
-  });
+  const phone =
+    typeof requestProperties.query.phone === 'string' &&
+    requestProperties.query.phone.trim()?.length === 11
+      ? requestProperties.query.phone
+      : false;
+
+  if (phone) {
+    data.read('users', phone, (err, user) => {
+      if (!err && user) {
+        const userData = parseJson(user);
+        delete userData.password;
+
+        callback(200, userData);
+      } else {
+        callback(400, {
+          message: 'User not found',
+        });
+      }
+    });
+  } else {
+    callback(400, {
+      message: 'Something went wrong',
+    });
+  }
 };
+
+// Handler put handler
 handler._users.put = (requestProperties, callback) => {};
+
+// User delete handler
 handler._users.delete = (requestProperties, callback) => {};
 
 module.exports = handler;
