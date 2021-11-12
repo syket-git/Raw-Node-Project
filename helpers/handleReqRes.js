@@ -13,6 +13,7 @@ const routes = require('../routes');
 const {
   notFoundHandler,
 } = require('../handlers/routeHandlers/notFoundHandler');
+const { parseJson } = require('./utilities');
 
 // eslint-disable-next-line spaced-comment
 //Module Scaffolding
@@ -38,31 +39,30 @@ handle.handleReqRes = (req, res) => {
   const decode = new StringDecoder('utf-8');
   let storeData = '';
 
-  const chosenHandler = routes[trimmedPath]
-    ? routes[trimmedPath]
-    : notFoundHandler;
-
-  chosenHandler(requestProperties, (statusCode, payload) => {
-    statusCode = typeof statusCode === 'number' ? statusCode : 500;
-    payload = typeof payload === 'object' ? payload : {};
-
-    const stringifyPayload = JSON.stringify(payload);
-
-    res.setHeader('Content-Type', 'application/json');
-    res.writeHead(statusCode);
-    res.end(stringifyPayload);
-  });
-
   req.on('data', (buffer) => {
     storeData += decode.write(buffer);
   });
 
   req.on('end', () => {
     storeData += decode.end();
-    console.log(storeData);
-  });
 
-  res.end();
+    requestProperties.body = parseJson(storeData);
+
+    const chosenHandler = routes[trimmedPath]
+      ? routes[trimmedPath]
+      : notFoundHandler;
+
+    chosenHandler(requestProperties, (statusCode, payload) => {
+      statusCode = typeof statusCode === 'number' ? statusCode : 500;
+      payload = typeof payload === 'object' ? payload : {};
+
+      const stringifyPayload = JSON.stringify(payload);
+
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(statusCode);
+      res.end(stringifyPayload);
+    });
+  });
 };
 
 //export module
